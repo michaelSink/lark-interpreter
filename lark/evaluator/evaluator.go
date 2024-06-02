@@ -96,6 +96,30 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return nativeBoolToBooleanObject(node.Value)
 	case *ast.HashLiteral:
 		return evalHashLiteral(node, env)
+	case *ast.ForLoopStatement:
+		init := Eval(node.Initialization, env)
+		if isError(init) {
+			return init
+		}
+
+		condition := Eval(node.Condition, env)
+		if isError(condition) {
+			return condition
+		}
+
+		for condition == TRUE {
+			body := Eval(&node.Body, env)
+			if isError(body) {
+				return body
+			}
+
+			update := Eval(node.Update, env)
+			if isError(update) {
+				return update
+			}
+
+			condition = Eval(node.Condition, env)
+		}
 	}
 
 	return nil

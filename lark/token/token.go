@@ -45,6 +45,7 @@ const (
 	TRUE     = "TRUE"
 	ELSE     = "ELSE"
 	FALSE    = "FALSE"
+	FOR      = "FOR"
 
 	EOF     = "EOF"
 	ILLEGAL = "ILLEGAL"
@@ -95,6 +96,7 @@ var keywords = map[string]TokenType{
 	"if":     IF,
 	"else":   ELSE,
 	"return": RETURN,
+	"for":    FOR,
 }
 
 func FindIdentifier(ident string) TokenType {
@@ -103,4 +105,8 @@ func FindIdentifier(ident string) TokenType {
 		keyword = IDENT
 	}
 	return keyword
+}
+
+func IsComparisonToken(token string) bool {
+	return token == EQ || token == NOT_EQ || token == GT || token == LT
 }

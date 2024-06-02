@@ -337,3 +337,15 @@ func (hl *HashLiteral) String() string {
 
 	return out.String()
 }
+
+type ForLoopStatement struct {
+	Token          token.Token //FOR toke
+	Initialization *LetStatement
+	Condition      Expression
+	Body           BlockStatement
+	Update         *LetStatement
+}
+
+func (fl *ForLoopStatement) statementNode()       {}
+func (fl *ForLoopStatement) TokenLiteral() string { return fl.Token.Literal }
+func (fl *ForLoopStatement) String() string       { return "" }

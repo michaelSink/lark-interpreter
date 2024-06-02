@@ -1069,6 +1069,34 @@ func testBooleanLiteral(t *testing.T, exp ast.Expression, value bool) bool {
 	return true
 }
 
+func nothing() int { return 0 }
+
+func TestForLoop(t *testing.T) {
+	input := "for(let i = 0; i < 10; let i = i + 1) { let b = 0; let r = 1; return b + r; }"
+
+	lexer := lexer.New(input)
+	parser := New(lexer)
+	program := parser.ParseProgram()
+	checkParserErrors(t, parser)
+
+	forLoop, ok := program.Statements[0].(*ast.ForLoopStatement)
+	if !ok {
+		t.Fatalf("Not a for loop LOL")
+	}
+
+	if forLoop.Initialization == nil {
+		t.Fatalf("Failed to parse initialization")
+	}
+
+	if len(forLoop.Body.Statements) == 0 {
+		t.Fatalf("Failed to parse for loop body")
+	}
+
+	if forLoop.Update == nil {
+		t.Fatalf("Failed to parse update of for loop")
+	}
+}
+
 func checkParserErrors(t *testing.T, p *Parser) {
 	errors := p.Errors()
 	if len(errors) == 0 {

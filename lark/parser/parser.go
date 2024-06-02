@@ -115,6 +115,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseLetStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
+	case token.FOR:
+		return p.parseForLoopStatement()
 	default:
 		return p.parseExpressionStatement()
 	}
@@ -525,4 +527,66 @@ func (p *Parser) parseHashLiteral() ast.Expression {
 	}
 
 	return hash
+}
+
+func (p *Parser) parseForLoopStatement() *ast.ForLoopStatement {
+	loop := &ast.ForLoopStatement{Token: p.curToken}
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	p.nextToken()
+
+	loop.Initialization = p.parseLetStatement()
+
+	if !p.curTokenIs(token.SEMICOLON) {
+		return nil
+	}
+
+	p.nextToken()
+
+	condition := p.parseExpression(LOWEST)
+
+	infix, isInfix := condition.(*ast.InfixExpression)
+	_, isBoolean := condition.(*ast.Boolean)
+
+	if !isBoolean && !isInfix {
+		p.errors = append(
+			p.errors,
+			"Loop condition must evlauate to a boolean.",
+		)
+		return nil
+	}
+
+	if isInfix && !token.IsComparisonToken(infix.Token.Literal) {
+		p.errors = append(
+			p.errors,
+			"Loop condition must be a comparison or boolean, got %s",
+			infix.Token.Literal,
+		)
+		return nil
+	}
+
+	loop.Condition = condition
+
+	if !p.expectPeek(token.SEMICOLON) {
+		return nil
+	}
+
+	p.nextToken()
+
+	loop.Update = p.parseLetStatement()
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	loop.Body = *p.parseBlockStatement()
+
+	return loop
 }

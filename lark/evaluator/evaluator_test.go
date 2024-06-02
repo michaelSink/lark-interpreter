@@ -582,6 +582,46 @@ func TestHashIndexExpressions(t *testing.T) {
 		}
 	}
 }
+
+func TestForLoop(t *testing.T) {
+	tests := []struct {
+		input         string
+		expectedStore map[string]int64
+	}{
+		{
+			`
+				let r = 10;
+				for(let i = 0; i < 10; let i = i + 1) {
+					let r = r + 1
+				}
+			`,
+			map[string]int64{
+				"r": 20,
+				"i": 10,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := parser.New(l)
+		program := p.ParseProgram()
+		env := object.NewEnvironment()
+
+		Eval(program, env)
+
+		for ident, expectedValue := range tt.expectedStore {
+			identValue, ok := env.Get(ident)
+			if !ok {
+				t.Errorf("Expected value %s is not defined in store.", ident)
+			}
+
+			testIntegerObject(t, identValue, expectedValue)
+		}
+	}
+
+}
+
 func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
